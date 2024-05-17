@@ -20,13 +20,18 @@ class Project(Base):
     manager = relationship('User', backref='projects')
 
 # Define the many-to-many relationship between Users and Projects
-project_assignment = Table(
-    'project_assignment',
-    Base.metadata,
-    Column('project_id', Integer, ForeignKey('Projects.id')),
-    Column('employee_id', Integer, ForeignKey('Users.id')),
-    PrimaryKeyConstraint('employee_id')
-)
+# project_assignment = Table(
+#     'project_assignment',
+#     Base.metadata,
+#     Column('project_id', Integer, ForeignKey('Projects.id')),
+#     Column('employee_id', Integer, ForeignKey('Users.id')),
+#     PrimaryKeyConstraint('employee_id')
+# )
+class Project_assignment(Base) : 
+    __tablename__ = 'project_assignment'
+    project_id = Column(Integer, ForeignKey('Projects.id'),nullable = False)
+    employee_id = Column(Integer, ForeignKey('Users.id'),nullable = False,primary_key = True)
+
 
 
 
@@ -48,13 +53,18 @@ class Request(Base):
     manager = relationship('User', backref='requests')
 
 
-employee_assignment = Table(
-    'employee_assignment',
-    Base.metadata,
-    Column('request_id', Integer, ForeignKey('Requests.id')),
-    Column('employee_id', Integer, ForeignKey('Users.id')),
-    PrimaryKeyConstraint('request_id')
-)
+# employee_assignment = Table(
+#     'employee_assignment',
+#     Base.metadata,
+#     Column('request_id', Integer, ForeignKey('Requests.id')),
+#     Column('employee_id', Integer, ForeignKey('Users.id')),
+#     PrimaryKeyConstraint('request_id')
+# )
+
+class Employee_assignment(Base) : 
+    __tablename__ = 'employee_assignment'
+    request_id = Column(Integer, ForeignKey('Requests.id'),nullable = False,primary_key = True)
+    employee_id = Column(Integer, ForeignKey('Users.id'),nullable = False)
 
 
 class EmployeeSkill(Base):
