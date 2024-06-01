@@ -33,8 +33,6 @@ class Project_assignment(Base) :
     employee_id = Column(Integer, ForeignKey('Users.id'),nullable = False,primary_key = True)
 
 
-
-
 class Skill(Base):
     __tablename__ = 'Skills'
     id = Column(Integer, primary_key=True, index=True)
@@ -45,7 +43,7 @@ class Request(Base):
     id = Column(Integer, primary_key=True, index=True)
     manager_id = Column(Integer, ForeignKey('Users.id'), nullable=False)
     project_id = Column(Integer, ForeignKey('Projects.id'),nullable=False )
-    requested_skills = Column(String(255), nullable=False)
+    requested_emp_id = Column(Integer, nullable=False)
     status = Column(Enum('pending', 'approved', 'rejected', name='request_status'), nullable=False, default='pending')
 
     # Define a many-to-one relationship between Request and User

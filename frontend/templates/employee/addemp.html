@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Form</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .side {
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .form label {
+            margin: 10px 0 5px;
+            text-align: left;
+        }
+        .form input,select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .form button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .form button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="side">
+        <h2>Add Employee</h2>
+        <form class="form" id="employeeForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required><br>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br>
+
+            <label for="user_type">User Type:</label>
+            <select name="user_type" id="user_type">
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="employee">Employee</option>
+              </select>
+
+
+            <button type="submit" id="submitButton">Submit</button>
+        </form>
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script>
+        const fdata = document.querySelector('.form');
+        const submitButton = document.getElementById('submitButton');
+        const messageDiv = document.getElementById('message');
+
+        fdata.addEventListener('submit', event => {
+            event.preventDefault();
+            const formData = new FormData(fdata);
+
+            const formDataObj = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                user_type: formData.get('user_type'),
+                password: formData.get('password')
+            };
+
+            submitButton.textContent = 'Submitting...';
+            submitButton.disabled = true;
+
+            fetch('http://127.0.0.1:8000/Create-employees/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formDataObj)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    messageDiv.textContent = data.message;
+                    messageDiv.classList.remove('error');
+                    messageDiv.classList.add('success');
+                } else {
+                    messageDiv.textContent = 'Employee added successfully!';
+                    messageDiv.classList.remove('error');
+                    messageDiv.classList.add('success');
+                }
+                messageDiv.style.display = 'block';
+                fdata.reset();
+            })
+            .catch(error => {
+                messageDiv.textContent = 'Error: ' + error.message;
+                messageDiv.classList.remove('success');
+                messageDiv.classList.add('error');
+                messageDiv.style.display = 'block';
+            })
+            .finally(() => {
+                submitButton.textContent = 'Submit';
+                submitButton.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>

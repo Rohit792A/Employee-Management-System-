@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills List</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+        }
+        .container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .skills-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .skills-table th, .skills-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .skills-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Skills List</h2>
+        <table class="skills-table" id="skillsTable">
+            <thead>
+                <tr>
+                    <th>Skill ID</th>
+                    <th>Skill Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Skills will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('http://127.0.0.1:8000/skills/')
+                .then(response => response.json())
+                .then(data => {
+                    const skillsTableBody = document.querySelector('#skillsTable tbody');
+                    skillsTableBody.innerHTML = '';
+
+                    data.forEach(skill => {
+                        const row = document.createElement('tr');
+                        const skillIdCell = document.createElement('td');
+                        const skillNameCell = document.createElement('td');
+
+                        skillIdCell.textContent = skill.id;
+                        skillNameCell.textContent = skill.name;
+
+                        row.appendChild(skillIdCell);
+                        row.appendChild(skillNameCell);
+
+                        skillsTableBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching skills:', error);
+                });
+        });
+    </script>
+</body>
+</html>
