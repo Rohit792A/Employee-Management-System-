@@ -1,35 +1,19 @@
 import pytest
 from fastapi import Depends
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker,Session
-from sqlalchemy.pool import StaticPool
+
 import sys
 from pathlib import Path
 parent_dir = Path(__file__).parents[1]
 sys.path.append(str(parent_dir))
 
 from run import app
+from configtest import override_get_db
 from routers.auth import get_current_user
-from database import get_db,Base
+from database import get_db
 from routers.employee import router as employee_router
 from models import User,Project,Skill,Request,EmployeeSkill,Project_assignment,Employee_assignment
 
-
-# app = FastAPI()
-# Set up a test database
-TEST_DATABASE_URL = "postgresql://postgres:rohit792A@localhost:5432/test"
-engine = create_engine(TEST_DATABASE_URL)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Override the get_db dependency function for testing
-def override_get_db():
-    database = TestingSessionLocal()
-
-    try:
-        yield database
-    finally:
-        database.close()
 
 app.dependency_overrides[get_db] = override_get_db
 
@@ -40,18 +24,10 @@ def cleanup_db(db):
     db.query(Project).delete()
     db.query(User).filter(User.email != 'ro@gmail.com').delete()
     db.query(Skill).delete()
-   
     db.query(Employee_assignment).delete()
     db.query(Request).delete()
 
-    
     db.commit()
-
-
-
-#create all the tables
-Base.metadata.create_all(bind=engine)
-
 
 
 # Create a test client
