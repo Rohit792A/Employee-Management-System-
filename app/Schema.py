@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from enum import Enum
-from typing import List,Optional
 
 
 class UserType(str, Enum):
@@ -21,29 +20,6 @@ class User_with_id(BaseModel):
     user_type: UserType
     password: str
 
-from pydantic import BaseModel
-from typing import List, Optional
-
-# class ProjectDetail(BaseModel):
-#     id: int
-#     name: str
-
-# class SkillDetail(BaseModel):
-#     id: int
-#     name: str
-
-# class EmployeeDetail(BaseModel):
-#     id: int
-#     name: str
-#     email: str
-#     user_type: str
-#     projects: List[ProjectDetail]
-#     manager_id: Optional[int]
-#     manager_name: Optional[str]
-#     skills: List[SkillDetail]
-
-
-    
 class ProjectCreate(BaseModel):
     name: str
     manager_id: int

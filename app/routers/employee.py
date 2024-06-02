@@ -5,24 +5,25 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from Schema import EmployeeSkillUpdate, EmployeeUpdate, User,Skills,User_with_id,Skillname
 from models import User as newuser,Project as newproj, Project_assignment, EmployeeSkill,Skill as allskills,Request as newreq
-# from auth import authenticate_user
-# from routers.auth import get_current_user,bcrypt_context
 from routers.auth import bcrypt_context,get_current_user
 
 router = APIRouter(tags=["Employee related Funtions"])
-# cu = get_current_user
 
 templates = Jinja2Templates(directory="..\\frontend\\templates\\employee")
 
 #Create a new employee
 @router.post("/Create-employees/", response_model=User_with_id)
 def create_employee(user: User, db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
+
+    # check if current user is in db
     user_id = cu["id"]
     c_user = db.get(newuser, user_id)
-    #if user is not present or is not admin raise error
+
+    # if user is not present or is not admin raise error
     if not c_user or c_user.user_type != 'admin':
         raise HTTPException(status_code=401, detail="Unauthorized")
     
+    # add the user to db
     db_user = newuser(
         name=user.name, 
         email=user.email, 
@@ -34,9 +35,11 @@ def create_employee(user: User, db: Session = Depends(get_db),cu : dict = Depend
     db.refresh(db_user)
     return db_user
 
-
+# Get all the employees
 @router.get("/employees/" ,response_model=list[User_with_id])
 def get_employees(db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
+
+    # check if current user is in db
     user_id = cu["id"]
     user = db.get(newuser, user_id)
     
@@ -47,35 +50,41 @@ def get_employees(db: Session = Depends(get_db),cu : dict = Depends(get_current_
     else:
         raise HTTPException(status_code=404, detail="No user found")
 
+# Delete a user from db 
 @router.delete("/employees/{employee_id}")
 def delete_employee(employee_id: int, db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
+
+    # check if current user is in db
     user_id = cu["id"]
     user = db.get(newuser, user_id)
-    #if user is not present or is not admin raise error
+
+    # if user is not present or is not admin raise error
     if not user or user.user_type != 'admin':
         raise HTTPException(status_code=401, detail="Unauthorized")
     
-    emp = db.get(newuser, employee_id) #get row based on the primarykey 
+    emp = db.get(newuser, employee_id)                  #get row based on the primarykey 
     if emp is None:
         raise HTTPException(status_code=404, detail="Employee not found")
     db.delete(emp)
     db.commit()
     return {"message": "Employee deleted successfully"}
 
+# Get details related to a single employee
 @router.get("/employeedetails/{employee_id}", response_model=None)
 def get_employee_details(employee_id: int, db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
     
-    #if user is present and manager can view emp details ans emp can only view his own details
+    # check if current user is in db
     user_id = cu["id"]
     user = db.get(newuser, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    #emp can only view his own details
+    
+    # emp can only view his own details
     if user.user_type== 'employee':
         if employee_id!=user_id:
             raise HTTPException(status_code=401, detail="Unauthorized")
     
-    #manager can view only his own and emp details
+    # manager can view only his own and emp details
     elif user.user_type =='manager':
         employee = db.query(newuser).filter(newuser.id == employee_id).first()
         if employee or employee_id==user_id:
@@ -84,7 +93,6 @@ def get_employee_details(employee_id: int, db: Session = Depends(get_db),cu : di
             raise HTTPException(status_code=401, detail="Unauthorized")
 
     # get the employee details
-
     employee = db.query(newuser).filter(newuser.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
@@ -96,7 +104,8 @@ def get_employee_details(employee_id: int, db: Session = Depends(get_db),cu : di
     if projects is None:
         emp_proj = []
     else:
-        #create a list of dict with id and name
+
+        # create a list of dict with id and name of project
         for project in projects:
             emp_proj.append({"id": project.id, "name": project.name})
 
@@ -105,13 +114,13 @@ def get_employee_details(employee_id: int, db: Session = Depends(get_db),cu : di
     if skills == None:
         emp_skills = []
     else:
-        #create a list of dict with id and name
+        # create a list of dict with id and name of skills
         emp_skills = []
         for skill in skills:
             emp_skills.append({"id": skill.id, "name": skill.name})
 
 
-    #get the manager id from the project table
+    # get the manager id from the project table
     mang_id=db.query(newproj).join(Project_assignment).filter(Project_assignment.employee_id == employee_id).first()
     if mang_id:
             manager_id = mang_id.manager_id
@@ -133,36 +142,45 @@ def get_employee_details(employee_id: int, db: Session = Depends(get_db),cu : di
     }
     return employee_detail
 
-
+# Update emp details using emp id
 @router.put("/employees/{employee_id}", response_model=User)
-def update_employee(employee_id: int, employee_data: EmployeeUpdate, db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
+def update_employee(employee_id: int, employee_data: EmployeeUpdate, db: Session = Depends(get_db),
+                    cu : dict = Depends(get_current_user)):
+    
+    # check if current user is in db
     user_id = cu["id"]
     user = db.get(newuser, user_id)
-    #if user is not present or is not admin raise error
+
+    # if user is not present or is not admin raise error
     if not user or user.user_type != 'admin':
         raise HTTPException(status_code=401, detail="Unauthorized")
     
-    #check if a user with given id is in db else error
+    # check if a user with given id is in db else error
     emp = db.get(newuser, employee_id)
     if emp is None:
         raise HTTPException(status_code=404, detail="Employee not found")
+    # update the details
     emp.name = employee_data.name
     emp.email = employee_data.email
-    emp.password = employee_data.password
+    emp.password = bcrypt_context.hash(employee_data.password)
     emp.user_type = employee_data.user_type
     db.commit()
     db.refresh(emp)
     return emp
 
-#create a endpoint to add new skills in db
+# Add new skills to db
 @router.post("/new_skills", response_model=dict)
 def create_skill(skill: Skillname, db: Session = Depends(get_db), cu: dict = Depends(get_current_user)):
+
+    # check if current user is in db
     user_id = cu["id"]
     user = db.get(newuser, user_id)
+
     # if user is not present or is not admin raise error
     if not user or user.user_type != 'admin':
         raise HTTPException(status_code=401, detail="Unauthorized")
-    #if skill name already exists
+    
+    # if skill name already exists
     if db.query(allskills).filter(allskills.name == skill.name).first():
         raise HTTPException(status_code=400, detail="Skill already exists")
 
@@ -171,15 +189,20 @@ def create_skill(skill: Skillname, db: Session = Depends(get_db), cu: dict = Dep
     db.commit()
     db.refresh(db_skill)
     return {"message": "Skill added successfully"}
-    #create a endpoint to delete skills in db
+
+# Delete skills from db
 @router.delete("/skills/{skill_id}", response_model=dict)
 def delete_skill(skill_id: int, db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
+
+    # check if current user is in db
     user_id = cu["id"]
     user = db.get(newuser, user_id)
-        #if user is not present or is not admin raise error
+
+    # if user is not present or is not admin raise error
     if not user or user.user_type != 'admin':
         raise HTTPException(status_code=401, detail="Unauthorized")
         
+    # if skill not exists raise error
     skill = db.get(allskills, skill_id)
     if skill is None:
         raise HTTPException(status_code=404, detail="Skill not found")
@@ -188,18 +211,24 @@ def delete_skill(skill_id: int, db: Session = Depends(get_db),cu : dict = Depend
     return {"message": "Skill deleted successfully"}
 
 
+# Add skills to employee
 @router.post("/employees/{employee_id}/addskills/", response_model=dict)
 def add_employee_skills(employee_id: int, skills: EmployeeSkillUpdate, db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
+    
+    # check if current user is in db
     user_id = cu["id"]
     user = db.get(newuser, user_id)
+
+    # if user is not present raise error
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    #emp can only update his own skills
+    
+    # emp can only update his own skills
     if user.user_type== 'employee':
         if employee_id!=user_id:
             raise HTTPException(status_code=401, detail="Unauthorized")
         
-    #manager can update only his own and emp skills
+    # manager can update only his own and emp skills
     if user.user_type== 'manager':
         employee = db.query(newuser).filter(newuser.id == employee_id).first()
         if employee or employee_id==user_id:
@@ -207,39 +236,37 @@ def add_employee_skills(employee_id: int, skills: EmployeeSkillUpdate, db: Sessi
         else:
             raise HTTPException(status_code=401, detail="Unauthorized")
 
-
-    #check if a user with given id is in db else error
+    # check if a user with given id is in db else error
     emp = db.get(newuser, employee_id)
     if emp is None:
         raise HTTPException(status_code=404, detail="Employee not found")   
     
-    # Add new skills
+    # Add skills
     for skill_id in skills.skill_ids:
         employee_skill = EmployeeSkill(employee_id=employee_id, skill_id=skill_id)
         db.add(employee_skill)
     db.commit()
     return {"message": "Employee skills updated successfully"}
 
-
-# @router.put("/employees/{employee_id}/skills/", response_model=dict, dependencies=[Depends(authenticate_user('admin'))])
+# Update the emp skills by deleting prev skills
 @router.put("/employees/{employee_id}/updateskills/", response_model=dict)
 def update_employee_skills(employee_id: int, skills: EmployeeSkillUpdate, db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
     
+    # check if current user is in db
     user_id = cu["id"]
     user = db.get(newuser, user_id)
-    #if user is not present or is not admin raise error
+
+    # if user is not present or is not admin raise error
     if not user or user.user_type != 'admin':
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    #check if a user with given id is in db else error
+    # check if a user with given id is in db else error
     emp = db.get(newuser, employee_id)
     if emp is None:
         raise HTTPException(status_code=404, detail="Employee not found")
     
     # Delete existing skills
-   
     db.query(EmployeeSkill).filter(EmployeeSkill.employee_id == employee_id).delete()
-   
     
     # Add new skills
     for skill_id in skills.skill_ids:
@@ -248,17 +275,23 @@ def update_employee_skills(employee_id: int, skills: EmployeeSkillUpdate, db: Se
     db.commit()
     return {"message": "Employee skills updated successfully"}
 
+# Filter emp by skills
 @router.post("/employees/filter/", response_model=list[User_with_id])
 def filter_employees_by_skills(skill_ids: list[int], db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
+
+    # check if current user is in db
     user_id = cu["id"]
     user = db.get(newuser, user_id)
+
     #if user is not present or is not admin or manager raise error
     if not user or user.user_type not in ['admin', 'manager']:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     # Get all unassigned employees
-    subquery = db.query(Project_assignment.employee_id)     #get all empid from project_assignment table
-    unassigned_employees = db.query(newuser).filter(newuser.id.notin_(subquery)).all()  #remove the employees present in the project_assignment table
+    subquery = db.query(Project_assignment.employee_id)      # get all empid from project_assignment table
+
+    # remove the employees present in the project_assignment table
+    unassigned_employees = db.query(newuser).filter(newuser.id.notin_(subquery)).all()   
 
     # Filter employees by requested skills
     filtered_employees = []
@@ -269,16 +302,21 @@ def filter_employees_by_skills(skill_ids: list[int], db: Session = Depends(get_d
 
     return filtered_employees
 
-#get the skills table show skill id and name of all skills 
+# get all the skills 
 @router.get("/skills/",response_model=list[Skills])
 def get_all_skills(db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
+    
+    # check if current user is in db
     user_id = cu["id"]
     user = db.get(newuser, user_id)
+
+    # if user is not present raise error
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     skill_enteries = db.query(allskills).all()
 
+    # if no skill found raise error
     if skill_enteries:
         return skill_enteries
     else:
@@ -286,11 +324,16 @@ def get_all_skills(db: Session = Depends(get_db),cu : dict = Depends(get_current
 
 
 
+#################################################################################################################################
+
+# Functions to render html pages
+
 @router.get('/getempdata/',response_class=HTMLResponse)
 def index(request: Request ,db: Session = Depends(get_db),cu : dict = Depends(get_current_user)):
     
     context = {'request' : request}
-    #check if user exists and user type is admin then render else 401 error
+
+    # check if user exists and user type is admin then render else 401 error
     if cu is None or cu["user_type"]!="admin":
         return templates.TemplateResponse("unauthenticated.html",context,status_code=401)
     return templates.TemplateResponse("empdta.html",context)
@@ -348,8 +391,3 @@ def index(request: Request):
 def index(request: Request):
     context = {'request' : request}
     return templates.TemplateResponse("users_for_emp.html", context)
-
-
-#endpoint for update password by emp id
-
-

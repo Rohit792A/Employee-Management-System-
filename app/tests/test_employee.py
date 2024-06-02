@@ -8,7 +8,7 @@ parent_dir = Path(__file__).parents[1]
 sys.path.append(str(parent_dir))
 
 from run import app
-from configtest import override_get_db
+from tests.test_config import override_get_db
 from routers.auth import get_current_user
 from database import get_db
 from routers.employee import router as employee_router
@@ -48,6 +48,14 @@ def override_get_current_user_not_found():
 
 #############################################################################################################
 
+"""
+    Test the login functionality.
+
+    This function sends a POST request to the '/auth/newtoken' endpoint with user credentials.
+    It then asserts that the response status code is 200, and that the response JSON contains
+    the expected keys: 'access_token', 'token_type', and 'role'.
+
+"""
 def test_login():
     formData = {
         "username": "ro@gmail.com",  
@@ -61,6 +69,13 @@ def test_login():
 
 #############################################################################################################
 
+"""
+    Test function to create a new employee.
+
+    This function sends a POST request to the "/Create-employees/" endpoint with user data.
+    It then asserts that the response status code is 200 and that the response data is a dictionary.
+    It also verifies that the expected keys ("id", "name", "email", "user_type") are present in the response data.
+"""
 
 def test_create_emp():
     db = next(override_get_db())
@@ -86,7 +101,12 @@ def test_create_emp():
     cleanup_db(db)
 
 #############################################################################################################
+"""
+ This function makes a GET request to '/employees/' endpoint,
+ asserts the response status code is 200 (OK),
+ and asserts the response data is a list.
 
+"""
 def test_get_employees():
 
     # Make a GET request to fetch all employees
@@ -273,7 +293,7 @@ def test_update_employee_data_validation():
 
 #############################################################################################################
 
-# Test for create_skill
+# CREATE SKILL Testing
 def test_create_skill_unauthorized():
 
     # Create a test employee in the database
@@ -313,7 +333,11 @@ def test_create_skill_already_exists():
     assert response.json() == {"detail": "Skill already exists"}
     cleanup_db(db)
 
-# Test for delete_skill
+
+###########################################################################################################
+
+#  DELETE SKILL Testing
+
 def test_delete_skill_unauthorized():
     # Create a test employee in the database
     db = next(override_get_db())
@@ -334,7 +358,7 @@ def test_delete_skill_not_found():
     assert response.status_code == 404
     assert response.json() == {"detail": "Skill not found"}
 
-############################################################################################
+##############################################################################################################
 
 
 #ADD SKILLS TEsing
@@ -424,6 +448,7 @@ def test_add_employee_skills_employee_not_found():
 
 #############################################################################################################
 
+# GET ALL SKILLS Testing
 def test_get_all_skills_success():
     app.dependency_overrides[get_current_user] = override_get_current_user_admin  # Assuming this is an authorized user
 
@@ -543,7 +568,7 @@ def test_update_employee_skills_employee_not_found():
 
 #############################################################################################################
 
-#FILTER Testing
+#FILTER EMP BY SKILLS Testing
 
 
 def test_filter_employees_unauthorized():

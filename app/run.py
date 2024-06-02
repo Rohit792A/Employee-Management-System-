@@ -2,8 +2,6 @@ from fastapi import FastAPI,Request
 from routers import employee, request, project,auth,login
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
-from pathlib import Path
-from fastapi.staticfiles import StaticFiles
 import logging
 import logging.handlers
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -21,7 +19,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-
 app = FastAPI()
 logger.info("Starting API....")
 
@@ -35,15 +32,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(LoggingMiddleware)
 
-
-
-
-app.mount(
-    "/static",
-    StaticFiles(directory=Path(__file__).parent.parent.absolute() / "frontend\\templates\\static"),
-    name="static",
-)
-
 templates = Jinja2Templates(directory="..\\frontend\\templates")
 app.include_router(employee.router)
 app.include_router(auth.router)
@@ -51,9 +39,10 @@ app.include_router(login.router)
 app.include_router(request.router)
 app.include_router(project.router)
 
-# @app.get("/")
-# async def root():
-#     return {"message": "Hello World"}
+
+#################################################################################################################################
+
+# Functions to render html pages
 
 @app.get('/',response_class=HTMLResponse)
 def index(request: Request):
@@ -65,7 +54,6 @@ def index(request: Request):
     context = {'request' : request}
     return templates.TemplateResponse("emp_details.html",context)
 
-#create a endpoint for logout.html
 
 @app.get('/logout/',response_class=HTMLResponse)
 def index(request: Request):

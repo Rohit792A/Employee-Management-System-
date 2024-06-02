@@ -1,5 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker,Session
+
+import sys
+from pathlib import Path
+parent_dir = Path(__file__).parents[1]
+sys.path.append(str(parent_dir))
 from database import Base
 
 

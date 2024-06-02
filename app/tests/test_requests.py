@@ -10,7 +10,7 @@ parent_dir = Path(__file__).parents[1]
 sys.path.append(str(parent_dir))
 
 from run import app
-from configtest import override_get_db
+from tests.test_config import override_get_db
 from routers.auth import get_current_user
 from database import get_db,Base
 from routers.employee import router as employee_router
@@ -61,7 +61,7 @@ def test_login():
 
 ##########################################################################
 
-# Test for request_employees
+# REQUEST EMPLOYEES Testing
 
 def test_request_employees_user_not_found():
     app.dependency_overrides[get_current_user] = override_get_current_user_not_found
@@ -277,7 +277,7 @@ def test_get_requests_success():
 
 #############################################################################################
 
-# Test for approve_request
+# APPROVE REQUEST Testing
 def test_approve_request_unauthorized():
 
     db = next(override_get_db())
@@ -336,7 +336,7 @@ def test_approve_request_success():
 
 ################################################################################
 
-# Test for reject_request
+# REJECT PROJECT Testing
 def test_reject_request_already_approved():
    
 
@@ -387,7 +387,7 @@ def test_reject_request_success():
 
 ##########################################################################
 
-
+# DELETE REQUEST Testing 
 def test_delete_request_unauthorized():
     db = next(override_get_db())
     user = User(id=2, name="Emp", email="Emp@gmail.com", user_type="employee", password="hashedpassword")

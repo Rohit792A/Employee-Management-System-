@@ -137,11 +137,23 @@
             const submitButton = event.target.querySelector('button');
             submitButton.disabled = true; // Disable button to prevent multiple submits
             submitButton.style.backgroundColor = '#007bff'; // Maintain the blue color
+
             try {
                 const response = await fetch(`http://127.0.0.1:8000/employeedetails/${employeeId}`);
+                
                 if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
+                    if (response.status === 404) {
+                        throw new Error('Employee not found.');
+                    } else if (response.status === 400) {
+                        throw new Error('Invalid Employee ID.');
+                    }else if (response.status ===401){
+                        throw new Error('Invalid Employee ID.');
+                
+                    } else {
+                        throw new Error('An unexpected error occurred.');
+                    }
                 }
+                
                 const data = await response.json();
                 displayEmployeeDetails(data);
             } catch (error) {

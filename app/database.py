@@ -13,7 +13,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Define the base class for all SQLAlchemy ORM models
 Base = declarative_base()
 
-# Create the database tables using the Base.metadata.create\_all() method
+# Create the database tables using the Base.metadata.create_all() method
 Base.metadata.create_all(bind=engine)
 
 # Define a function to create a new database session

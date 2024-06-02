@@ -29,12 +29,17 @@
             width: 100%;
             margin-bottom: 10px;
         }
+        select {
+            height: 150px;
+        }
         button {
             background-color: #5cb85c;
             color: white;
             border: none;
             padding: 10px;
             cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
         }
         button:hover {
             background-color: #4cae4c;
@@ -53,10 +58,7 @@
 
             <label for="skills">Select Skills:</label>
             <select id="skills" name="skills" multiple required>
-                <option value="1">Python</option>
-                <option value="2">Django</option>
-                <option value="3">Java<option>
-                <!-- Add more skills as needed -->
+                <!-- Options will be dynamically populated here -->
             </select>
 
             <button type="submit">Add Skills</button>
@@ -67,36 +69,54 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script>
-        document.getElementById('addSkillsForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const employeeId = document.getElementById('employeeId').value;
-            const skillsSelect = document.getElementById('skills');
-            const selectedSkills = Array.from(skillsSelect.selectedOptions).map(option => option.value);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch available skills
+            fetch('http://127.0.0.1:8000/skills/')
+                .then(response => response.json())
+                .then(data => {
+                    const skillsSelect = document.getElementById('skills');
+                    data.forEach(skill => {
+                        const option = document.createElement('option');
+                        option.value = skill.id;
+                        option.textContent = skill.name;
+                        skillsSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching skills:', error);
+                });
 
-            const payload = {
-                skill_ids: selectedSkills
-            };
+            document.getElementById('addSkillsForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const employeeId = document.getElementById('employeeId').value;
+                const skillsSelect = document.getElementById('skills');
+                const selectedSkills = Array.from(skillsSelect.selectedOptions).map(option => option.value);
 
-            fetch(`http://127.0.0.1:8000/employees/${employeeId}/addskills/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                const responseMessage = document.getElementById('responseMessage');
-                if (data.message) {
-                    responseMessage.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-                } else if (data.detail) {
-                    responseMessage.innerHTML = `<div class="alert alert-danger">${data.detail}</div>`;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('responseMessage').innerHTML = `<div class="alert alert-danger">Error adding skills</div>`;
+                const payload = {
+                    skill_ids: selectedSkills
+                };
+
+                fetch(`http://127.0.0.1:8000/employees/${employeeId}/addskills/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const responseMessage = document.getElementById('responseMessage');
+                    if (data.message) {
+                        responseMessage.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                    } else if (data.detail) {
+                        responseMessage.innerHTML = `<div class="alert alert-danger">${data.detail}</div>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('responseMessage').innerHTML = `<div class="alert alert-danger">Error adding skills</div>`;
+                });
             });
         });
     </script>

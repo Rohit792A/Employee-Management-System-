@@ -8,7 +8,7 @@ parent_dir = Path(__file__).parents[1]
 sys.path.append(str(parent_dir))
 
 from run import app
-from configtest import override_get_db
+from tests.test_config import override_get_db
 from routers.auth import get_current_user
 from database import get_db
 from routers.employee import router as employee_router
@@ -57,7 +57,10 @@ def test_login():
     assert "token_type" in response.json()
     assert "role" in response.json()
 
+###########################################################################################################
 
+
+# CREATE PROJECT Testing
 def test_create_projects():
     db = next(override_get_db())
     app.dependency_overrides[get_current_user] = override_get_current_user_admin
@@ -85,6 +88,7 @@ def test_create_projects():
 
 #############################################################################################
 
+# GET PROJECTS Testing
 def test_get_projects():
     db = next(override_get_db())
 
@@ -114,6 +118,7 @@ def test_get_projects():
 
 ###########################################################################################
 
+# GET ASSIGNED PROJECT Testing
 def test_get_assigned_all():
     db = next(override_get_db())
     # create a manager in db
@@ -202,6 +207,8 @@ def test_get_assigned_all_no_projects():
     
 #############################################################################
 
+
+# ASSIGN PROJECT TO EMPLOYEE Testing
 
 # Test for assign_employee_to_project
 def test_assign_employee_to_project_unauthorized():
@@ -309,6 +316,7 @@ def test_assign_employee_success():
 
 #################################################################################
 
+# UNASSIGN EMPLOYEE from Project Testing
 
 # Test for unassign_employee_from_project
 def test_unassign_employee_from_project_unauthorized():

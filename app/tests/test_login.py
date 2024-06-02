@@ -1,19 +1,15 @@
 import pytest
 from fastapi import Depends
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker,Session
-from sqlalchemy.pool import StaticPool
 import sys
 from pathlib import Path
 parent_dir = Path(__file__).parents[1]
 sys.path.append(str(parent_dir))
 
 from run import app
-from configtest import override_get_db
-from routers.auth import get_current_user,bcrypt_context
-from database import get_db,Base
-from routers.employee import router as employee_router
+from tests.test_config import override_get_db
+from routers.auth import get_current_user
+from database import get_db
 from models import User,Project,Skill,Request,EmployeeSkill,Project_assignment,Employee_assignment
 
 
@@ -58,6 +54,12 @@ def test_login():
     assert "token_type" in response.json()
     assert "role" in response.json()
 
+
+#################################################################################################################
+
+
+
+# UPDATE PASSWORD Testing
 def test_update_password_success():
     # Create a test user in the database
     db = next(override_get_db())
@@ -80,6 +82,7 @@ def test_update_password_success():
     # Assertions
     assert response.status_code == 200
     assert response.json() == {"message": "Password updated successfully"}
+
 
 
 def test_update_password_user_not_found():

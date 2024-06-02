@@ -8,7 +8,7 @@ sys.path.append(str(parent_dir))
 
 from run import app
 from routers.auth import authenticate_user, create_access_token
-from configtest import override_get_db
+from tests.test_config import override_get_db
 from models import User
 from passlib.context import CryptContext
 from datetime import timedelta

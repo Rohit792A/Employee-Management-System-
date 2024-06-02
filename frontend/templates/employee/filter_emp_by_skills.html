@@ -58,10 +58,10 @@
         <h2>Filter Employees by Skills</h2>
         <form id="filterForm">
             <div class="form-group">
-                <label for="skills">Select Skills:</label>
-                <select id="skills" class="form-control" multiple>
-                    <!-- Options will be populated dynamically -->
-                </select>
+                <label>Select Skills:</label>
+                <div id="skillsContainer">
+                    <!-- Checkbox options will be populated dynamically -->
+                </div>
             </div>
             <button type="submit" class="btn">Filter Employees</button>
         </form>
@@ -88,12 +88,16 @@
             fetch('http://127.0.0.1:8000/skills/')
                 .then(response => response.json())
                 .then(data => {
-                    const skillsSelect = document.getElementById('skills');
+                    const skillsContainer = document.getElementById('skillsContainer');
                     data.forEach(skill => {
-                        const option = document.createElement('option');
-                        option.value = skill.id;
-                        option.textContent = skill.name;
-                        skillsSelect.appendChild(option);
+                        const checkboxDiv = document.createElement('div');
+                        checkboxDiv.classList.add('checkbox');
+                        checkboxDiv.innerHTML = `
+                            <label>
+                                <input type="checkbox" value="${skill.id}"> ${skill.name}
+                            </label>
+                        `;
+                        skillsContainer.appendChild(checkboxDiv);
                     });
                 })
                 .catch(error => {
@@ -102,7 +106,7 @@
 
             document.getElementById('filterForm').addEventListener('submit', function(event) {
                 event.preventDefault();
-                const selectedSkills = Array.from(document.getElementById('skills').selectedOptions).map(option => parseInt(option.value));
+                const selectedSkills = Array.from(document.querySelectorAll('#skillsContainer input:checked')).map(checkbox => parseInt(checkbox.value));
                 console.log(selectedSkills)
                 fetch('http://127.0.0.1:8000/employees/filter/', {
                     method: 'POST',
