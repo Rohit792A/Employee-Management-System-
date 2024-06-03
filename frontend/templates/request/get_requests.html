@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requests</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        .container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .btn{
+            margin: 10px;
+        }
+        .message {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Requests</h2>
+        <table id="requestTable">
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Manager ID</th>
+                    <th>Project ID</th>
+                    <th>Requested Employee ID</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Request rows will be added here dynamically -->
+            </tbody>
+        </table>
+        <div id="responseMessage" class="message"></div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('http://127.0.0.1:8000/requests/')
+                .then(response => response.json())
+                .then(data => {
+                    const requestTableBody = document.getElementById('requestTable').getElementsByTagName('tbody')[0];
+                    data.forEach(request => {
+                        const row = requestTableBody.insertRow();
+                        row.insertCell(0).textContent = request.id;
+                        row.insertCell(1).textContent = request.manager_id;
+                        row.insertCell(2).textContent = request.project_id;
+                        row.insertCell(3).textContent = request.requested_emp_id;
+                        row.insertCell(4).textContent = request.status;
+
+                        const actionCell = row.insertCell(5);
+                        if (request.status === 'pending') {
+                            const approveButton = document.createElement('button');
+                            approveButton.textContent = 'Approve';
+                            approveButton.className = 'btn btn-success';
+                            approveButton.onclick = function() {
+                                handleRequest(request.id, 'approve');
+                            };
+                            actionCell.appendChild(approveButton);
+
+                            const rejectButton = document.createElement('button');
+                            rejectButton.textContent = 'Reject';
+                            rejectButton.className = 'btn btn-danger';
+                            rejectButton.onclick = function() {
+                                handleRequest(request.id, 'reject');
+                            };
+                            actionCell.appendChild(rejectButton);
+                        } else {
+                            actionCell.textContent = 'N/A';
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        function handleRequest(requestId, action) {
+            fetch(`http://127.0.0.1:8000/requests/${requestId}/${action}/`, {
+                method: 'PUT'
+            })
+            .then(response => response.json())
+            .then(data => {
+                const responseMessage = document.getElementById('responseMessage');
+                if (data.status === 'approved' || data.status === 'rejected') {
+                    responseMessage.textContent = `Request ${action}d successfully.`;
+                    responseMessage.className = 'message success';
+                } else {
+                    responseMessage.textContent = `Failed to ${action} request.`;
+                    responseMessage.className = 'message error';
+                }
+                responseMessage.style.display = 'block';
+                setTimeout(() => {
+                    responseMessage.style.display = 'none';
+                }, 3000);
+
+                // Refresh the page to show updated request status
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const responseMessage = document.getElementById('responseMessage');
+                responseMessage.textContent = `Error ${action}ing request.`;
+                responseMessage.className = 'message error';
+                responseMessage.style.display = 'block';
+                setTimeout(() => {
+                    responseMessage.style.display = 'none';
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>

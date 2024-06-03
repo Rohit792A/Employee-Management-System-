@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Employee to Project</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .form label {
+            margin: 10px 0 5px;
+            text-align: left;
+        }
+        .form input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .form button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .form button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Assign Employee to Project</h2>
+        <form class="form" id="assignForm">
+            <label for="employee_id">Employee ID:</label>
+            <input type="number" id="employee_id" name="employee_id" required>
+
+            <label for="project_id">Project ID:</label>
+            <input type="number" id="project_id" name="project_id" required>
+
+            <button type="submit" id="submitButton">Assign</button>
+        </form>
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script>
+        const assignForm = document.getElementById('assignForm');
+        const submitButton = document.getElementById('submitButton');
+        const messageDiv = document.getElementById('message');
+
+        assignForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const formData = new FormData(assignForm);
+
+            const formDataObj = {
+                project_id: formData.get('project_id'),
+                employee_id: formData.get('employee_id')
+            };
+
+            submitButton.textContent = 'Assigning...';
+            submitButton.disabled = true;
+
+            fetch('http://127.0.0.1:8000/projects/assign_employee', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formDataObj)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.detail || 'Unknown error');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                messageDiv.textContent = data.message;
+                messageDiv.classList.remove('error');
+                messageDiv.classList.add('success');
+                messageDiv.style.display = 'block';
+                assignForm.reset();
+            })
+            .catch(error => {
+                if (error.message === 'Employee not found') {
+                    messageDiv.textContent = 'Error: Employee not found';
+                } else if (error.message === 'Project not found') {
+                    messageDiv.textContent = 'Error: Project not found';
+                } else {
+                    messageDiv.textContent = 'Error: ' + error.message;
+                }
+                messageDiv.classList.remove('success');
+                messageDiv.classList.add('error');
+                messageDiv.style.display = 'block';
+            })
+            .finally(() => {
+                submitButton.textContent = 'Assign';
+                submitButton.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>

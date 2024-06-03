@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum, ForeignKey, Table,PrimaryKeyConstraint
+from sqlalchemy import Column, Integer, String, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -19,15 +19,11 @@ class Project(Base):
     # Define a many-to-one relationship between Project and User
     manager = relationship('User', backref='projects')
 
-# Define the many-to-many relationship between Users and Projects
-project_assignment = Table(
-    'project_assignment',
-    Base.metadata,
-    Column('project_id', Integer, ForeignKey('Projects.id')),
-    Column('employee_id', Integer, ForeignKey('Users.id')),
-    PrimaryKeyConstraint('employee_id')
-)
 
+class Project_assignment(Base) : 
+    __tablename__ = 'project_assignment'
+    project_id = Column(Integer, ForeignKey('Projects.id'),nullable = False)
+    employee_id = Column(Integer, ForeignKey('Users.id'),nullable = False,primary_key = True)
 
 
 class Skill(Base):
@@ -40,21 +36,12 @@ class Request(Base):
     id = Column(Integer, primary_key=True, index=True)
     manager_id = Column(Integer, ForeignKey('Users.id'), nullable=False)
     project_id = Column(Integer, ForeignKey('Projects.id'),nullable=False )
-    requested_skills = Column(String(255), nullable=False)
+    requested_emp_id = Column(Integer, nullable=False)
     status = Column(Enum('pending', 'approved', 'rejected', name='request_status'), nullable=False, default='pending')
 
-    # Define a many-to-one relationship between Request and User
+    # Define a many-to-one relationship between Request and User,Project
     project = relationship('Project', backref='requests')
     manager = relationship('User', backref='requests')
-
-
-employee_assignment = Table(
-    'employee_assignment',
-    Base.metadata,
-    Column('request_id', Integer, ForeignKey('Requests.id')),
-    Column('employee_id', Integer, ForeignKey('Users.id')),
-    PrimaryKeyConstraint('request_id')
-)
 
 
 class EmployeeSkill(Base):

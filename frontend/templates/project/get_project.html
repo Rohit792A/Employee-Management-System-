@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects List</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+        }
+        .container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .projects-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .projects-table th, .projects-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .projects-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Projects List</h2>
+        <table class="projects-table" id="projectsTable">
+            <thead>
+                <tr>
+                    <th>Project ID</th>
+                    <th>Project Name</th>
+                    <th>Project Manager ID</th>
+                </tr>
+            </thead>
+            <tbody id="projectsTableBody">
+                <!-- Projects will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('http://127.0.0.1:8000/projects/')
+                .then(response => response.json())
+                .then(data => {
+                    const projectsTableBody = document.querySelector('#projectsTableBody');
+                    projectsTableBody.innerHTML = '';
+
+                    data.forEach(project => {
+                        const row = document.createElement('tr');
+                        
+                        const projectIdCell = document.createElement('td');
+                        const projectNameCell = document.createElement('td');
+                        const projectMangCell = document.createElement('td');
+
+                        projectIdCell.textContent = project.id;
+                        projectNameCell.textContent = project.name;
+                        projectMangCell.textContent = project.manager_id;
+
+                        row.appendChild(projectIdCell);
+                        row.appendChild(projectNameCell);
+                        row.appendChild(projectMangCell);
+
+                        projectsTableBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching projects:', error);
+                });
+        });
+    </script>
+</body>
+</html>
