@@ -26,3 +26,19 @@ The Employee Management Portal is a web-based application built using FastAPI fo
 1. Clone the repository:
    ```bash
    git clone https://github.com/Rohit792A/Project.git
+
+2. Navigate to the project directory:
+   ```bash
+     cd Project
+
+3. Create a virtual environment and activate it:
+   ```bash
+      python -m venv venv
+      source venv/bin/activate   # On Windows: venv\Scripts\activate
+4. Install dependencies:
+   ```bash
+      pip install -r requirements.txt
+   
+
+6.
+
